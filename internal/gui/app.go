@@ -475,7 +475,7 @@ func Run(version string, showMain bool, link string) error {
 	go h.lighten()
 	h.watchAlerts()
 	// the quick panel by the icon, or the main window if the user would
-	// rather (Settings → Tray icon)
+	// rather (Settings → Click tray icon)
 	h.tray.OnClick(func() {
 		if cmdClick() {
 			return // Command-drag moves the icon; the system handles it

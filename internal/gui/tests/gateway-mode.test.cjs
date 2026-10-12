@@ -4,7 +4,7 @@
 // opens on Providers with no Agents or Library tab, an address
 // kept for one of them opening Providers; Settings leaves out what is
 // written into this computer's agents' files (provider in model names,
-// Codex subagents, long conversations, Codex thread titles) and the
+// Codex subagents, long conversations, Codex title generation) and the
 // desktop's alerts, and General has the switch — Automatic, On, Off —
 // saying why it is on. Off brings the tabs and the rows back at once, the
 // Agents page opening again; Automatic takes them away again. magpie web
@@ -178,7 +178,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
         assert.deepEqual(await tabs(page), ["agents", "sessions", "library", "providers", "routing", "gateway", "usage", "plugins"], where);
         assert.deepEqual(await viewShown(page), ["view-agents"], where);
         await page.locator("#prefs").click();
-        await page.waitForSelector("#langSegs .opt");
+        await page.waitForSelector("#themeSegs .opt");
         assert.equal(await page.locator("#gatewayModeRow").isVisible(), web, `${where}: the switch`);
         if (web) assert.match(await page.locator("#gatewayModeSub").textContent(), new RegExp(L[lang].off), where);
         assert.deepEqual(errors, [], where);

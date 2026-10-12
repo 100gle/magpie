@@ -19,9 +19,9 @@ const { chromium, webkit } = require("playwright");
 
 const assets = path.resolve(__dirname, "../assets");
 const words = {
-  en: { names: "Names & levels", edit: "Edit", own: "Not on names I set", on: "On", off: "Off", label: "In agents’ lists",
+  en: { names: "Names & levels", edit: "Edit", own: "Exclude custom names", on: "On", off: "Off", label: "In agents’ lists",
     shows: (l) => `Agents’ lists show “${l}”`, above: " · “· routing group” is set for every group above", setting: "Names in agents’ lists" },
-  zh: { names: "名称与推理档位", edit: "编辑", own: "自定义名称不带供应商", on: "开启", off: "关闭", label: "Agent 列表里的名称",
+  zh: { names: "名称与推理档位", edit: "编辑", own: "排除自定义名称", on: "开启", off: "关闭", label: "Agent 列表里的名称",
     shows: (l) => `Agent 的模型列表里显示为「${l}」`, above: " · 是否带「· routing group」在上方统一设置，对所有路由组生效", setting: "Agent 列表里的名称" },
 };
 
@@ -145,7 +145,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       assert.equal(await page.locator("#view-routing select").count(), 0);
       assert.equal(await set.evaluate((e) => getComputedStyle(e).borderLeftWidth), "0px");
       assert.equal(await row2.evaluate((e) => getComputedStyle(e).borderLeftWidth), "0px");
-      const missing = await page.evaluate(() => ["Agents’ lists show “{label}”", "In agents’ lists", "Not on names I set", "Provider in model names",
+      const missing = await page.evaluate(() => ["Agents’ lists show “{label}”", "In agents’ lists", "Exclude custom names", "Provider in model names",
         "Names in agents’ lists", "“· routing group” is set for every group above",
         "Whether “· routing group” follows a group’s name in the agents’ lists: one setting for every group, and for the provider after each model’s name, as on Settings."]
         .filter((k) => !I18N.zh[k] || !I18N.ja[k] || !I18N.de[k]));

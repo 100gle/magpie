@@ -239,8 +239,9 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
           } else await sweep(tab);
         }
         assert.deepEqual(missed, [], "controls the redraw left in place");
-        // Theme, Language, Text size, … each warm-up's and check-in's, Proxy, the local network's, Privacy's, OTel's, Sync's, About's
-        assert(done.size >= 49, `only ${done.size} controls: ${[...done].join(", ")}`);
+        // Theme, Text size, … each warm-up's and check-in's, Proxy, the local network's, Privacy's, OTel's, Sync's, About's
+        // (Language is a pick of the app's own menu, not a segmented control)
+        assert(done.size >= 48, `only ${done.size} controls: ${[...done].join(", ")}`);
         assert.deepEqual(posted, [], "a stopped click saved something");
         assert.deepEqual(errors, []);
       });

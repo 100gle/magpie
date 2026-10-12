@@ -83,31 +83,38 @@ for (const [name, engine] of [["webkit", webkit], ["chromium", chromium]]) {
         if (want === "zh") assert.deepEqual(got.units, ["1.33 亿", "6.8 万"]);
         await page.close();
       }
-      // Settings → Language holds six choices now: on a wide window they sit
-      // on one line, and on a narrow one they wrap inside the row rather
-      // than pushing the page sideways or cutting a name short
+      // Settings → Language holds six choices in the app's own menu (as
+      // Session terminal's): the row carries one pick for the language
+      // shown, and its menu lists every language inside the window at both
+      // widths, with nothing cut and the page not pushed sideways
       for (const width of [1000, 440]) {
         const page = await (await browser.newContext({ locale: "zh-TW", viewport: { width, height: 760 } })).newPage();
         page.setDefaultTimeout(5000);
         await page.route("**/*", serve("zh-TW"));
         await page.goto("http://magpie.test/");
         await page.locator("#prefs").click();
-        await page.locator("#langSegs .opt").first().waitFor();
+        const pick = page.locator("#langSelect");
+        await pick.waitFor();
+        assert.equal((await pick.innerText()).trim(), "繁體中文", `${width}px: the language shown is on the row`);
+        assert.equal(await page.locator("#langSelect select").count(), 0, "no native select");
+        await pick.click();
+        await page.locator(".proto-menu .pm-item").first().waitFor();
         const fit = await page.evaluate(() => {
-          const segs = document.querySelector("#langSegs"), row = segs.parentElement.getBoundingClientRect(), box = segs.getBoundingClientRect();
+          const menu = document.querySelector(".proto-menu"), box = menu.getBoundingClientRect();
+          const row = document.querySelector("#langSelect"), here = row.getBoundingClientRect();
+          const own = row.parentElement.getBoundingClientRect();
           return {
-            inside: box.left >= row.left && box.right <= row.right + 0.5,
+            inside: box.left >= -0.5 && box.right <= innerWidth + 0.5 && box.top >= -0.5 && box.bottom <= innerHeight + 0.5,
+            inRow: here.left >= own.left - 0.5 && here.right <= own.right + 0.5,
             sideways: document.documentElement.scrollWidth > innerWidth,
-            cut: [...segs.querySelectorAll(".opt")].filter((o) => o.scrollWidth > o.clientWidth + 1).map((o) => o.textContent),
-            names: [...segs.querySelectorAll(".opt")].map((o) => o.textContent),
-            lines: new Set([...segs.querySelectorAll(".opt")].map((o) => Math.round(o.getBoundingClientRect().top))).size,
+            cut: [...menu.querySelectorAll(".pm-name")].filter((o) => o.scrollWidth > o.clientWidth + 1).map((o) => o.textContent),
+            names: [...menu.querySelectorAll(".pm-name")].map((o) => o.textContent),
             units: !document.querySelector("#unitsRow").hidden,
           };
         });
         assert.deepEqual(fit.names, ["跟隨系統", "English", "简体中文", "繁體中文", "日本語", "Deutsch"]);
-        assert.ok(fit.inside && !fit.sideways, `${width}px: ${JSON.stringify(fit)}`);
+        assert.ok(fit.inside && fit.inRow && !fit.sideways, `${width}px: ${JSON.stringify(fit)}`);
         assert.deepEqual(fit.cut, [], `${width}px`);
-        if (width === 1000) assert.equal(fit.lines, 1);
         assert.ok(fit.units, "Number units (萬 / 億) is offered in Traditional Chinese too");
         await page.close();
       }

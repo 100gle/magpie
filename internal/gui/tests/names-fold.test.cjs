@@ -15,8 +15,8 @@ const { chromium, webkit } = require("playwright");
 
 const assets = path.resolve(__dirname, "../assets");
 const words = {
-  en: { names: "Names & levels", fold: "Fold", own: "Not on names I set", cancel: "Cancel" },
-  zh: { names: "名称与推理档位", fold: "收起", own: "自定义名称不带供应商", cancel: "取消" },
+  en: { names: "Names & levels", fold: "Fold", own: "Exclude custom names", cancel: "Cancel" },
+  zh: { names: "名称与推理档位", fold: "收起", own: "排除自定义名称", cancel: "取消" },
   ja: { names: "名前と推論レベル", fold: "折りたたむ" },
   de: { names: "Namen & Stufen", fold: "Einklappen" },
 };

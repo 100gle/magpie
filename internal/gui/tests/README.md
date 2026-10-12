@@ -518,11 +518,11 @@ row (#335): on by default, Off posts `settings/plain-names` with `mode: "off"`
 on its own and lights Off, On posts it back, and neither click scrolls the
 page. English and Chinese, Chromium and WebKit.
 
-`model-suffix-own.test.cjs` checks that row's third way (#92): "Not on names
-I set" (自定义名称不带供应商) between Off and On, lit by `plainOwnNames`; On and
+`model-suffix-own.test.cjs` checks that row's third way (#92): "Exclude
+custom names" (排除自定义名称) between Off and On, lit by `plainOwnNames`; On and
 then it post `settings/plain-names` with `mode: "on"` and `mode: "own"`,
-neither click scrolls the page, the hint isn't cut short and the three fit
-the row at 900px and 560px. English and Chinese, Chromium and WebKit.
+neither click scrolls the page, and the three fit the row at 900px and
+560px. English and Chinese, Chromium and WebKit.
 
 `routing-steady.test.cjs` scrolls the Routing page down to its routing groups,
 opens one in its editor and types into its name, then streams six requests in
@@ -2023,6 +2023,17 @@ without the page moving, another setting's save keeping it, no left-border
 accent, and no such row on a browser's page (`web`). English and Chinese,
 Chromium and WebKit, with `/api/settings` faked:
 node --test internal/gui/tests/lightweight.test.cjs
+
+`settings-general.test.cjs` checks Settings → General's copy after the pass
+that shortened it: "Click tray icon" and "Show in Dock" carry no line under
+the name, Lightweight mode and Session terminal keep one short line each,
+Prevent sleep's line says what the setting does, and Language is a pick of
+the app's own menu as Session terminal's is (no strip of tabs), listing
+every language inside the window. A pick there saves the language and the
+rows are drawn again in it; no click scrolls the page. English, Chinese,
+Japanese and German, at 900px and 440px, Chromium and WebKit, with
+`/api/settings` faked:
+node --test internal/gui/tests/settings-general.test.cjs
 ```
 
 ## Mobile Web

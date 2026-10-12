@@ -1,12 +1,13 @@
 // Run with Node's test runner and Playwright on the module path; see README.md.
 // xiao_wang24004 on X: 能不能在里面加一个保持电脑任务常亮的选项呢？电脑在做任务
-// 的过程中经常自动关闭了. Settings → General has a "Keep awake while agents
-// work" row, off by default: On and Off are saved as keepAwake true and
+// 的过程中经常自动关闭了. Settings → General has a "Prevent sleep" row, off by
+// default: On and Off are saved as keepAwake true and
 // false, the click moving nothing; another setting saved keeps it; a
 // browser's page (magpie web, the gateway's own computer) shows it too.
 // #975 (Hu9956: an agent recording the screen found it locked): a third
-// choice keeps the display on too, saved as keepAwakeDisplay, its line
-// saying so, and another setting's save keeps it. In every language, at
+// choice keeps the display on too, saved as keepAwakeDisplay, the line
+// under the name saying what the setting does either way, and another
+// setting's save keeps it. In every language, at
 // 900px and 440px, with the API faked.
 const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
@@ -17,10 +18,10 @@ const { watchSettingsReads, settingsDrawn } = require("./reader.cjs");
 
 const assets = path.resolve(__dirname, "../assets");
 const words = {
-  en: { name: "Keep awake while agents work", sub: "Keeps this computer from going to sleep by itself while agents work through magpie and for ten minutes after; the display may still turn off", on: "On", off: "Off", display: "Screen on too", displaySub: "Keeps this computer from going to sleep and its display on while agents work through magpie and for ten minutes after" },
-  zh: { name: "防止睡眠（Agent 工作时）", sub: "Agent 通过 magpie 工作时及之后十分钟内，阻止这台电脑自动睡眠；屏幕仍可能关闭", on: "开启", off: "关闭", display: "屏幕也常亮", displaySub: "Agent 通过 magpie 工作时及之后十分钟内，阻止这台电脑睡眠，屏幕也保持常亮、不锁屏" },
-  ja: { name: "エージェントの作業中はスリープしない", sub: "エージェントが magpie 経由で作業している間とその後 10 分間、このコンピューターが自動でスリープしないようにします。ディスプレイはオフになることがあります", on: "オン", off: "オフ", display: "画面もオン", displaySub: "エージェントが magpie 経由で作業している間とその後 10 分間、このコンピューターをスリープさせず、ディスプレイもオンのままにします" },
-  de: { name: "Wach halten, während Agenten arbeiten", sub: "Verhindert, dass dieser Computer von selbst in den Ruhezustand geht, während Agenten über magpie arbeiten, und zehn Minuten danach; der Bildschirm kann sich trotzdem ausschalten", on: "An", off: "Aus", display: "Bildschirm auch an", displaySub: "Verhindert, dass dieser Computer in den Ruhezustand geht, und hält den Bildschirm an, während Agenten über magpie arbeiten, und zehn Minuten danach" },
+  en: { name: "Prevent sleep", sub: "Keeps this computer awake while magpie runs tasks", on: "On", off: "Off", display: "Screen on too" },
+  zh: { name: "防止休眠", sub: "在 magpie 运行任务时，让电脑保持唤醒状态", on: "开启", off: "关闭", display: "屏幕也常亮" },
+  ja: { name: "スリープを防ぐ", sub: "magpie がタスクを実行している間、このコンピューターをスリープさせません", on: "オン", off: "オフ", display: "画面もオン" },
+  de: { name: "Schlafmodus verhindern", sub: "Hält diesen Computer wach, während magpie Aufgaben ausführt", on: "An", off: "Aus", display: "Bildschirm auch an" },
 };
 
 function serve(lang, web, posted, st) {
@@ -109,9 +110,10 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       assert.equal(posted.at(-1).keepAwake, true);
       assert.equal(posted.at(-1).keepAwakeDisplay, true);
       assert.equal(await row.locator("#keepAwakeSegs .opt.on").innerText(), w.display);
-      // the row is drawn again as the save comes back
-      for (let i = 0; i < 50 && (await row.locator(".sub").innerText()) !== w.displaySub; i++) await page.waitForTimeout(50);
-      assert.equal(await row.locator(".sub").innerText(), w.displaySub);
+      // the row is drawn again as the save comes back, and the line under
+      // the name still says what the setting does, display choice or not
+      await page.waitForFunction(() => prefsBusy === 0);
+      assert.equal(await row.locator(".sub").innerText(), w.sub);
       const m = posted.length;
       await click(page.locator("#dockSegs .opt").first()).catch(() => {});
       for (let i = 0; i < 20 && posted.length === m; i++) await page.waitForTimeout(50);
@@ -126,7 +128,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
       for (let i = 0; i < 50 && posted.at(-1)?.keepAwakeDisplay !== false; i++) await page.waitForTimeout(50);
       assert.equal(posted.at(-1).keepAwake, true);
       assert.equal(posted.at(-1).keepAwakeDisplay, false);
-      for (let i = 0; i < 50 && (await row.locator(".sub").innerText()) !== w.sub; i++) await page.waitForTimeout(50);
+      await page.waitForFunction(() => prefsBusy === 0);
       assert.equal(await row.locator(".sub").innerText(), w.sub);
       await click(opt(w.off));
       for (let i = 0; i < 50 && posted.at(-1)?.keepAwake !== false; i++) await page.waitForTimeout(50);
@@ -149,7 +151,7 @@ for (const engine of (process.env.BROWSER ? [process.env.BROWSER] : ["chromium",
     if (width === 900) test(`${engine} ${lang}: the display kept on is shown as saved`, async (t) => {
       const { page, errors } = await open(engine, lang, false, [], { keepAwake: true, keepAwakeDisplay: true }, t);
       assert.equal(await page.locator("#keepAwakeSegs .opt.on").innerText(), words[lang].display);
-      assert.equal(await page.locator("#keepAwakeRow .sub").innerText(), words[lang].displaySub);
+      assert.equal(await page.locator("#keepAwakeRow .sub").innerText(), words[lang].sub);
       assert.deepEqual(errors, []);
     });
   }

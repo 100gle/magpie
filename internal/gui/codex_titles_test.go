@@ -12,7 +12,7 @@ import (
 	"github.com/yetone/magpie/internal/settings"
 )
 
-// Settings' Codex thread titles (#705) is set on its own: off, a model
+// Settings' Codex title generation (#705) is set on its own: off, a model
 // magpie serves (one it doesn't is refused), or back to Codex's own; the
 // Settings page's other saves, which never send it, keep it; and the page
 // is told the models it may name.
