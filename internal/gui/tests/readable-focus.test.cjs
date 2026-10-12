@@ -101,7 +101,9 @@ for (const engine of process.env.BROWSER ? [process.env.BROWSER] : ["chromium", 
       await watchSettingsReads(page);
       await page.goto("http://magpie.test/?view=settings");
       await settingsDrawn(page); // rows found are the ones that stay (#1659)
-      const description = page.locator(".row.pref .sub").filter({ hasText: /\S/ }).first();
+      // visible: whole tabs and rows are hidden, and a row's hint may be
+      // Omarchy's alone now that the first rows say nothing
+      const description = page.locator(".row.pref .sub:visible").filter({ hasText: /\S/ }).first();
       await description.waitFor();
       for (const theme of ["light", "dark"]) {
         await page.evaluate((value) => { document.documentElement.dataset.theme = value; }, theme);

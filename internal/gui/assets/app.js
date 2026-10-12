@@ -19472,7 +19472,6 @@ const CURRENCIES = [["usd", "$ USD"], ["cny", "¥ CNY"]];
 // as at 100%, and magpie sizes the windows around it (textsize.go). None is
 // under 100%: WebView2 and WebKitGTK zoom no smaller through Wails.
 const TEXT_SIZES = [100, 110, 125, 150];
-const textSizeKeys = () => /^Mac/.test(navigator.platform) ? "⌘+ ⌘− ⌘0" : "Ctrl+ Ctrl− Ctrl+0";
 // --zoom is the text size for what is placed against the window's own
 // drawing, which does not grow with the page: the Mac's traffic lights.
 function applyZoom(n) {
@@ -19587,8 +19586,10 @@ function renderFonts(s) {
     const chosen = current[key], family = fontList?.find((f) => f.name === chosen?.family);
     const missing = chosen && !window.desktopFonts.available(chosen);
     const note = row.querySelector(".font-note");
-    note.textContent = fontListError ? t("Couldn't read installed fonts") : fontFlight ? t("Loading…")
-      : missing ? t("Font unavailable; using system default") : fontList?.length === 0 ? t("No installed fonts found") : t("Saved only on this computer");
+    // a line under the row only when something is wrong with the choice:
+    // a font picked well says nothing (the name is on the buttons)
+    note.textContent = fontListError ? t("Couldn't read installed fonts")
+      : missing ? t("Font unavailable; using system default") : fontList?.length === 0 ? t("No installed fonts found") : "";
     note.classList.toggle("err", fontListError || !!missing);
     const pill = row.querySelector(".font-family"), style = row.querySelector(".font-style");
     const paint = (button, text, name) => {
@@ -20044,7 +20045,6 @@ function renderSettings() {
   renderGatewayMode(s);
   // a browser tab has its own zoom, and magpie leaves it to it
   $("#textSizeRow").hidden = web;
-  $("#textSizeSub").textContent = t("Everything in magpie's windows, larger; {keys} too", { keys: textSizeKeys() });
   $("#textSizeSegs").replaceChildren(segs(TEXT_SIZES.map((n) => [n, n + "%"]), s.textSize || 100, (n) => setTextSize(n)));
   $("#traySegs").replaceChildren(segs(TRAYS.map(([id, name]) => [id, t(name)]), s.tray || "panel", (tray) => savePrefs({ ...keep, tray })));
   // the Dock is the Mac's; the tray and the login item the app's
